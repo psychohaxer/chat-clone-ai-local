@@ -1,0 +1,6 @@
+{
+  "ollama": {
+    "apiBaseUrl": "http://localhost:11434",
+    "model": "gemma3:12b"
+  }
+}

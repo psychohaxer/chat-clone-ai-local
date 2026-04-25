@@ -4,6 +4,21 @@
 
 export {}
 
+// Load config from config.json
+let config = {
+  ollama: {
+    apiBaseUrl: "http://localhost:11434",
+    model: "llama3.2"
+  }
+};
+
+try {
+  const configFile = await Deno.readTextFile("./config.json");
+  config = JSON.parse(configFile);
+} catch (e) {
+  console.log("[launcher] Using default config (config.json not found or invalid)");
+}
+
 function streamOutput(process: Deno.Process, name: string) {
   const decoder = new TextDecoder();
   (async () => {
@@ -25,6 +40,10 @@ function streamOutput(process: Deno.Process, name: string) {
 const backendProcess = Deno.run({
   cmd: ["deno", "run", "--allow-env", "--allow-net", "--allow-read", "src/deno_entry.ts"],
   cwd: "./worker",
+  env: {
+    "OLLAMA_API_BASE_URL": config.ollama.apiBaseUrl,
+    "OLLAMA_MODEL": config.ollama.model
+  },
   stdout: "piped",
   stderr: "piped",
 });

@@ -44,24 +44,98 @@ You can run the application locally in two ways:
 2.  **Clone the Repository:**
 
     ```bash
-    git clone [https://github.com/BitWattr/chat-clone-ai-local](https://github.com/BitWattr/chat-clone-ai-local)
+    git clone https://github.com/BitWattr/chat-clone-ai-local
     cd chat-clone-ai-local
     ```
 
-3.  **Run the Application:**
+3.  **Install Dependencies:**
+
+    ```bash
+    # Install root npm dependencies
+    npm install
+
+    # Install frontend dependencies
+    cd frontend && npm install && cd ..
+
+    # Install worker dependencies
+    cd worker && npm install && deno install && cd ..
+    ```
+
+4.  **Configure Settings (Optional):**
+
+    Create a `config.json` file in the root directory to customize Ollama settings:
+
+    ```json
+    {
+      "ollama": {
+        "apiBaseUrl": "http://localhost:11434",
+        "model": "llama3.2"
+      }
+    }
+    ```
+
+5.  **Run the Application:**
 
     ```bash
     deno run --allow-run --allow-env --allow-net --allow-read launcher.ts
     ```
 
-4.  Your default web browser should automatically open to `http://localhost:3000`. If not, paste the link into a browser.
+6.  Your default web browser should automatically open to `http://localhost:3000`. If not, paste the link into a browser.
 
-## ⚙️ Settings
+## 🔧 Troubleshooting
 
-You can change the Ollama API URL and model by editing the config.json file in the root folder.
+### Common Issues
 
-* **Ollama Host URL:** The address where your Ollama server is running (default is `http://localhost:11434`).
-* **LLM Model Name:** The name of the Large Language Model you want to use (default is `llama3.2`). This model must be downloaded in Ollama (see "Install Ollama & Download an LLM" above).
+**"react-scripts: not found" or "uuid package not found"**
+- Make sure you've run all the dependency installation commands:
+  ```bash
+  npm install
+  cd frontend && npm install && cd ..
+  cd worker && npm install && deno install && cd ..
+  ```
+
+**"Could not resolve 'uuid'" or other dependency errors**
+- Run `deno install` in the worker directory to install Deno dependencies
+- Run `npm install` in both root and worker directories for Node.js packages
+
+**"frontendProcess is not defined" or launcher errors**
+- Make sure the `launcher.ts` file is properly formatted (check for syntax errors)
+
+**Ollama connection issues**
+- Ensure Ollama is running: `ollama serve`
+- Check that your model is downloaded: `ollama list`
+- Verify the API URL in `config.json` matches your Ollama setup
+
+**Application won't start**
+- Check that ports 3000 (frontend) and 8000 (backend) are available
+- Try running the backend and frontend separately for debugging:
+  ```bash
+  # Backend only
+  cd worker && deno run --allow-env --allow-net --allow-read src/deno_entry.ts
+
+  # Frontend only
+  cd frontend && npm start
+  ```
+
+You can change the Ollama API URL and model by editing the `config.json` file in the root folder.
+
+**Example config.json:**
+```json
+{
+  "ollama": {
+    "apiBaseUrl": "http://localhost:11434",
+    "model": "llama3.2"
+  }
+}
+```
+
+* **apiBaseUrl:** The address where your Ollama server is running (default is `http://localhost:11434`).
+* **model:** The name of the Large Language Model you want to use (default is `llama3.2`). This model must be downloaded in Ollama.
+
+**To change the model:**
+1. Edit `config.json` and update the `model` field
+2. Make sure the model is downloaded: `ollama run <model_name>`
+3. Restart the application
 
 **Important:** Ensure Ollama is running and the specified LLM model is downloaded before attempting to use the chat functionality.
 

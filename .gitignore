@@ -1,8 +1,34 @@
+# Dependencies
 /node_modules
 /frontend/node_modules
+/worker/node_modules
+
+# Python cache
 /backend/__pycache__
 /__pycache__
+
+# Build outputs
 /build
-/worker/node_modules
+/frontend/build
+
+# Executables and archives
 *.exe
 *.zip
+
+# Environment files
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
