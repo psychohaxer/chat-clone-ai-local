@@ -452,7 +452,7 @@ app.post('/chat/:sessionId', async (c) => {
             content: msg.message
         }));
 
-        const fullConversationForAI = [
+        const fullConversationForAI: Array<{ role: 'system' | 'user' | 'assistant', content: string }> = [
             { role: 'system', content: systemPrompt },
             ...messagesForAIModel,
         ];

@@ -63,13 +63,19 @@ You can run the application locally in two ways:
 
 4.  **Configure Settings (Optional):**
 
-    Create a `config.json` file in the root directory to customize Ollama settings:
+    Create a `config.json` file in the root directory to customize LLM settings (Ollama or NVIDIA NIM):
 
     ```json
     {
+      "provider": "ollama",
       "ollama": {
         "apiBaseUrl": "http://localhost:11434",
         "model": "llama3.2"
+      },
+      "nvidia": {
+        "apiBaseUrl": "https://integrate.api.nvidia.com/v1",
+        "model": "meta/llama-3.1-70b-instruct",
+        "apiKey": "nvapi-xxxxxxxxxxxxxxxxxxxxxxxx"
       }
     }
     ```
@@ -117,27 +123,49 @@ You can run the application locally in two ways:
   cd frontend && npm start
   ```
 
-You can change the Ollama API URL and model by editing the `config.json` file in the root folder.
+You can change the LLM settings by editing the `config.json` file in the root folder.
 
 **Example config.json:**
 ```json
 {
+  "provider": "ollama",
   "ollama": {
     "apiBaseUrl": "http://localhost:11434",
     "model": "llama3.2"
+  },
+  "nvidia": {
+    "apiBaseUrl": "https://integrate.api.nvidia.com/v1",
+    "model": "meta/llama-3.1-70b-instruct",
+    "apiKey": "nvapi-xxxxxxxxxxxxxxxxxxxxxxxx"
   }
 }
 ```
 
-* **apiBaseUrl:** The address where your Ollama server is running (default is `http://localhost:11434`).
-* **model:** The name of the Large Language Model you want to use (default is `llama3.2`). This model must be downloaded in Ollama.
+* **provider:** The LLM provider to use (`"ollama"` or `"nvidia"`).
+* **ollama.apiBaseUrl:** The address where your Ollama server is running (default is `http://localhost:11434`).
+* **ollama.model:** The name of the Ollama model you want to use (default is `llama3.2`). This model must be downloaded in Ollama.
+* **nvidia.apiBaseUrl:** The API base URL of the NVIDIA NIM endpoint (default is `https://integrate.api.nvidia.com/v1`).
+* **nvidia.model:** The name of the model you want to use from NVIDIA NIM catalog (default is `meta/llama-3.1-70b-instruct`).
+* **nvidia.apiKey:** Your NVIDIA API Key.
 
-**To change the model:**
-1. Edit `config.json` and update the `model` field
-2. Make sure the model is downloaded: `ollama run <model_name>`
-3. Restart the application
+### 🔄 Switching Between LLM Providers (Ollama & NVIDIA NIM)
 
-**Important:** Ensure Ollama is running and the specified LLM model is downloaded before attempting to use the chat functionality.
+You can easily switch between using Ollama (local) and NVIDIA NIM (cloud-hosted) by modifying the `"provider"` field in `config.json`:
+
+#### Option A: Use Local Ollama (Default)
+1. Set `"provider": "ollama"` in your `config.json`.
+2. Make sure the Ollama server is running locally (run `ollama serve`).
+3. Make sure you have downloaded the target model (e.g., `ollama run llama3.2`).
+
+#### Option B: Use NVIDIA NIM (Cloud API)
+1. Set `"provider": "nvidia"` in your `config.json`.
+2. Generate an API key from the [NVIDIA API Catalog](https://build.nvidia.com/).
+3. Set the API key in `"apiKey"` under the `"nvidia"` block in `config.json`.
+4. (Optional) Customize the `"model"` field under the `"nvidia"` block to any supported model in the NVIDIA Catalog (e.g., `meta/llama-3.1-70b-instruct`).
+
+*Note: Restart the application after making changes to `config.json` for the new settings to take effect.*
+
+**Important:** Ensure Ollama is running (if using Ollama) and the specified LLM model is available/downloaded before attempting to use the chat functionality.
 
 ## 🤝 How It Works (The Magic Behind the Mimicry)
 

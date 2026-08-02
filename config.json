@@ -1,6 +1,12 @@
 {
+  "provider": "ollama",
   "ollama": {
     "apiBaseUrl": "http://localhost:11434",
-    "model": "gemma3:12b"
+    "model": "llama3.2"
+  },
+  "nvidia": {
+    "apiBaseUrl": "https://integrate.api.nvidia.com/v1",
+    "model": "meta/llama-3.1-70b-instruct",
+    "apiKey": ""
   }
 }

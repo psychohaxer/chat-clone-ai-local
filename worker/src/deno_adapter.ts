@@ -63,10 +63,63 @@ class OllamaAiClient implements AiClient {
     }
 }
 
+// NVIDIA NIM client for Deno (OpenAI compatible)
+class NvidiaNimAiClient implements AiClient {
+    private baseUrl: string;
+    private model: string;
+    private apiKey: string;
+
+    constructor(baseUrl: string, model: string, apiKey: string) {
+        this.baseUrl = baseUrl;
+        this.model = model;
+        this.apiKey = apiKey;
+    }
+
+    async run(model: string, options: { messages: Array<{ role: string; content: string }>, max_tokens: number }): Promise<{ response: string }> {
+        const { messages } = options;
+        const response = await fetch(`${this.baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.apiKey}`,
+            },
+            body: JSON.stringify({
+                model: this.model,
+                messages: messages,
+                stream: false,
+                max_tokens: options.max_tokens,
+                temperature: 0.7,
+                top_p: 0.9,
+            }),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`NVIDIA NIM API error: ${response.statusText} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+            throw new Error(`Invalid response structure from NVIDIA NIM: ${JSON.stringify(data)}`);
+        }
+        return { response: data.choices[0].message.content };
+    }
+}
+
 const kvStore = new InMemoryKvStore();
-const ollamaBaseUrl = Deno.env.get('OLLAMA_API_BASE_URL') || 'http://localhost:11434';
-const ollamaModel = Deno.env.get('OLLAMA_MODEL') || 'llama3.2'; // Default Ollama model
-const aiClient = new OllamaAiClient(ollamaBaseUrl, ollamaModel);
+const provider = Deno.env.get('LLM_PROVIDER') || 'ollama';
+let aiClient: AiClient;
+
+if (provider === 'nvidia') {
+    const nvidiaBaseUrl = Deno.env.get('NVIDIA_API_BASE_URL') || 'https://integrate.api.nvidia.com/v1';
+    const nvidiaModel = Deno.env.get('NVIDIA_MODEL') || 'meta/llama-3.1-70b-instruct';
+    const nvidiaApiKey = Deno.env.get('NVIDIA_API_KEY') || '';
+    aiClient = new NvidiaNimAiClient(nvidiaBaseUrl, nvidiaModel, nvidiaApiKey);
+} else {
+    const ollamaBaseUrl = Deno.env.get('OLLAMA_API_BASE_URL') || 'http://localhost:11434';
+    const ollamaModel = Deno.env.get('OLLAMA_MODEL') || 'llama3.2'; // Default Ollama model
+    aiClient = new OllamaAiClient(ollamaBaseUrl, ollamaModel);
+}
 
 // Create the environment object to pass to Hono's fetch
 const honoEnv: AppBindings = { kvStore, aiClient };
@@ -75,5 +128,11 @@ const honoEnv: AppBindings = { kvStore, aiClient };
 serve((request: Request) => app.fetch(request, honoEnv, {} as ExecutionContext)); // Cast empty object to ExecutionContext
 
 console.log(`Deno server is running on http://localhost:8000`);
-console.log(`Ollama API Base URL: ${ollamaBaseUrl}`);
-console.log(`Ollama Model: ${ollamaModel}`);
+console.log(`LLM Provider: ${provider}`);
+if (provider === 'nvidia') {
+    console.log(`NVIDIA NIM API Base URL: ${Deno.env.get('NVIDIA_API_BASE_URL') || 'https://integrate.api.nvidia.com/v1'}`);
+    console.log(`NVIDIA NIM Model: ${Deno.env.get('NVIDIA_MODEL') || 'meta/llama-3.1-70b-instruct'}`);
+} else {
+    console.log(`Ollama API Base URL: ${Deno.env.get('OLLAMA_API_BASE_URL') || 'http://localhost:11434'}`);
+    console.log(`Ollama Model: ${Deno.env.get('OLLAMA_MODEL') || 'llama3.2'}`);
+}
